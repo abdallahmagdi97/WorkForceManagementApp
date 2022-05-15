@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WorkForceManagementApp.Models
 {
-    public class Status
+    public class Priority
     {
         [Key]
         public int Id { get; set; }

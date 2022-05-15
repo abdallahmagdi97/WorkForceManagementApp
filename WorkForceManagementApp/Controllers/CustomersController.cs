@@ -219,7 +219,16 @@ namespace WorkForceManagementApp.Controllers
             {
                 return NotFound();
             }
-
+            var ticket = await _context.Ticket.Where(t => t.CustomerRefId == id).ToListAsync();
+            if (ticket.Count() != 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Cannot delete Customer, there are open tickets for this customer." });
+            }
+            var meter = await _context.Meter.Where(t => t.CustomerRefId == id).ToListAsync();
+            if (meter.Count() != 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Cannot delete Customer, there are meters for this customer." });
+            }
             _context.Customer.Remove(customer);
             var customerAddresses = await _context.CustomerAddresses.Where(a => a.CustomerRefId == id).ToListAsync();
             if (customerAddresses.Count != 0)

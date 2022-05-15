@@ -36,6 +36,11 @@ namespace WorkForceManagementApp.Data
         public DbSet<WorkForceManagementApp.Models.Manufacturer> Manufacturer { get; set; }
         public DbSet<WorkForceManagementApp.Models.Enclosure> Enclosure { get; set; }
         public DbSet<WorkForceManagementApp.Models.CommunicationMethod> CommunicationMethod { get; set; }
-        
+        public DbSet<WorkForceManagementApp.Models.MeterType> MeterType { get; set; }
+        public DbSet<WorkForceManagementApp.Models.Role> Role { get; set; }
+        public DbSet<WorkForceManagementApp.Models.WorkOrderType> WorkOrderType { get; set; }
+        public DbSet<WorkForceManagementApp.Models.WorkOrder> WorkOrder { get; set; }
+        public DbSet<WorkForceManagementApp.Models.Priority> Priority { get; set; }
+
     }
 }

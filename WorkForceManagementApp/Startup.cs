@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,9 +35,9 @@ namespace WorkForceManagementApp
         {
             services.AddCors();
 
-
+            
             services.AddControllers();
-            services.AddSwaggerGen();
+            
             // For Entity Framework  
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ConnStr")));
 
@@ -69,18 +70,23 @@ namespace WorkForceManagementApp
                 };
             });
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API WSVAP (WebSmartView)", Version = "v1" });
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First()); //This line
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.  
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            string[] origins = { "http://iskra-wfm.000webhostapp.com", "http://localhost:5050", "https://iskra-wfm-stg.000webhostapp.com" };
             app.UseCors(
-                options => options.WithOrigins("http://localhost:5050").AllowAnyMethod().AllowAnyHeader()
+                options => options.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader()
             );
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseDeveloperExceptionPage();
+            
             
             app.UseRouting();
 
@@ -97,7 +103,7 @@ namespace WorkForceManagementApp
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ticketing API V1");
+                c.SwaggerEndpoint("./v1/swagger.json", "Ticketing API V1");
 
                 // To serve SwaggerUI at application's root page, set the RoutePrefix property to an empty string.
                 c.RoutePrefix = string.Empty;

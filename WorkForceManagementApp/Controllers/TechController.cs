@@ -34,10 +34,20 @@ namespace WorkForceManagementApp.Controllers
         public async Task<ActionResult<IEnumerable<Tech>>> GetTech([FromQuery] PaginationFilter filter)
         {
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
-            var techs = await _context.Tech.Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToListAsync();
-                
-            return Ok(new PagedResponse<List<Tech>>(techs, validFilter.PageNumber, validFilter.PageSize, techs.Count()));
             
+                var techs = await _context.Tech.Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToListAsync();
+
+                return Ok(new PagedResponse<List<Tech>>(techs, validFilter.PageNumber, validFilter.PageSize, techs.Count()));
+            
+        }
+        // GET: api/Tech
+        [Route("TechList")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Tech>>> GetTechList()
+        {
+            var techs = await _context.Tech.ToListAsync();
+
+            return Ok(techs);
         }
 
         // GET: api/Tech/5

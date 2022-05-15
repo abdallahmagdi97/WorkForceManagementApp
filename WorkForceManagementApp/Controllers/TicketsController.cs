@@ -27,7 +27,7 @@ namespace WorkForceManagementApp.Controllers
 
         // GET: api/Tickets
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Ticket>>> GetTicket([FromQuery] PaginationFilter filter)
+        public async Task<ActionResult<IEnumerable<Ticket>>> GetTickets([FromQuery] PaginationFilter filter)
         {
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
             var tickets = await _context.Ticket.Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToListAsync();
@@ -188,6 +188,9 @@ namespace WorkForceManagementApp.Controllers
             {
                 ticket.Skills = new List<int>();
             }
+            var tech = await _context.Tech.FindAsync(ticket.TechRefId);
+            ticket.TechName = tech.Name;
+            
             _context.Entry(ticket).State = EntityState.Modified;
             _context.Entry(ticket).Property(x => x.CreationDate).IsModified = false;
             _context.TicketSkills.RemoveRange(_context.TicketSkills.Where(t => t.TicketRefId == id).ToArray());
@@ -222,11 +225,20 @@ namespace WorkForceManagementApp.Controllers
         public async Task<ActionResult<Ticket>> PostTicket(Ticket ticket)
         {
             var meter = await _context.Meter.FindAsync(ticket.MeterRefId);
+            if (meter == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "This Meter doesn't exist." });
+            }
             if (ticket.CustomerRefId != meter.CustomerRefId)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "This Meter #"+meter.Id+" doesn't belong to the customer you selected." });
             }
             ticket.CreationDate = DateTime.Now;
+            if (!string.IsNullOrEmpty(ticket.TechName))
+            {
+                var tech = await _context.Tech.FindAsync(ticket.TechRefId);
+                ticket.TechName = tech.Name;
+            }
             _context.Ticket.Add(ticket);
             await _context.SaveChangesAsync();
             foreach (var skill in ticket.Skills)
@@ -234,6 +246,7 @@ namespace WorkForceManagementApp.Controllers
                 var ticketSkill = new TicketSkills() { TicketRefId = ticket.Id, SkillRefId = skill };
                 _context.TicketSkills.Add(ticketSkill);
             }
+            
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTicket", new { id = ticket.Id }, ticket);
@@ -245,9 +258,13 @@ namespace WorkForceManagementApp.Controllers
         public async Task<ActionResult<IEnumerable<Ticket>>> SearchTicket([FromBody] Models.TicketSearchModel ticket, [FromQuery] PaginationFilter filter)
         {
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
-            if (ticket == null || (ticket.MeterNumber == null && ticket.CustomerMobile == null && ticket.CustomerName == null && ticket.CustomerNationalId == null))
+            if (ticket == null || (ticket.MeterNumber == null && ticket.CustomerMobile == null && ticket.CustomerName == null && ticket.CustomerNationalId == null && ticket.TicketStatus == 0 && ticket.TicketPriority == 0))
             {
                 var ticks = await _context.Ticket.Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToListAsync();
+                foreach(var tick in ticks)
+                {
+                    tick.TechAssignDurationInDays = (DateTime.Now - tick.TechAssignDate).TotalDays;
+                }
                 return Ok(new PagedResponse<List<Ticket>>(ticks, validFilter.PageNumber, validFilter.PageSize, ticks.Count()));
             }
             int customerId = 0;
@@ -261,22 +278,35 @@ namespace WorkForceManagementApp.Controllers
             if (!string.IsNullOrEmpty(ticket.CustomerNationalId))
             {
                 var customer = _context.Customer.Where(m => m.NationalID.Contains(ticket.CustomerNationalId)).FirstOrDefault();
-                customerId = customer.Id;
+                if (customer != null)
+                {
+                    customerId = customer.Id;
+                }
             }
             if (!string.IsNullOrEmpty(ticket.CustomerName))
             {
                 var customer = _context.Customer.Where(m => m.Name.Contains(ticket.CustomerName)).FirstOrDefault();
-                customerId = customer.Id;
+                if (customer != null)
+                {
+                    customerId = customer.Id;
+                }
             }
             if (!string.IsNullOrEmpty(ticket.CustomerMobile))
             {
                 var customer = _context.Customer.Where(m => m.Mobile.Contains(ticket.CustomerMobile)).FirstOrDefault();
-                customerId = customer.Id;
+                if (customer != null)
+                {
+                    customerId = customer.Id;
+                }
             }
-            var tickets = await _context.Ticket.Where(t => t.CustomerRefId == customerId || meterId.Contains(t.MeterRefId)).Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToListAsync();
+            var tickets = await _context.Ticket.Where(t => t.CustomerRefId == customerId || meterId.Contains(t.MeterRefId) || t.StatusRefId == ticket.TicketStatus || t.PriorityRefId == ticket.TicketPriority).Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToListAsync();
             if (tickets.Count() == 0 && string.IsNullOrEmpty(ticket.CustomerName) && string.IsNullOrEmpty(ticket.CustomerMobile) && string.IsNullOrEmpty(ticket.MeterNumber) && string.IsNullOrEmpty(ticket.CustomerNationalId))
             {
                 tickets = await _context.Ticket.Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToListAsync();
+                foreach (var tick in tickets)
+                {
+                    tick.TechAssignDurationInDays = (DateTime.Now - tick.TechAssignDate).TotalDays;
+                }
             }
             return Ok(new PagedResponse<List<Ticket>>(tickets, validFilter.PageNumber, validFilter.PageSize, tickets.Count()));
         }
@@ -314,6 +344,19 @@ namespace WorkForceManagementApp.Controllers
                 statuses[i].Tickets = tickets.Length;
             }
             return statuses;
+        }
+        // GET: api/Tickets/GetAllTicketPriority
+        [Route("GetAllTicketPriority")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Priority>>> GetAllTicketPriority()
+        {
+            var priorities = await _context.Priority.ToListAsync();
+            for (int i = 0; i < priorities.Count(); i++)
+            {
+                var tickets = await _context.Ticket.Where(t => t.StatusRefId == priorities[i].Id).ToArrayAsync();
+                priorities[i].Tickets = tickets.Length;
+            }
+            return priorities;
         }
         // GET: api/Tickets/GetAllTicketAreas
         [Route("GetAllTicketAreas")]

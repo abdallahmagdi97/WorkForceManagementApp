@@ -2,63 +2,59 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WorkForceManagementApp.Data;
 using WorkForceManagementApp.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WorkForceManagementApp.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class StatusController : ControllerBase
+    public class PrioritiesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
-        public StatusController(ApplicationDbContext context)
+        public PrioritiesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Status
+        // GET: api/Priorities
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Status>>> GetStatus()
+        public async Task<ActionResult<IEnumerable<Priority>>> GetPriority()
         {
-            return await _context.Status.ToListAsync();
-            
+            return await _context.Priority.ToListAsync();
         }
 
-        // GET: api/Status/5
+        // GET: api/Priorities/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Status>> GetStatus(int id)
+        public async Task<ActionResult<Priority>> GetPriority(int id)
         {
-            var status = await _context.Status.FindAsync(id);
+            var priority = await _context.Priority.FindAsync(id);
 
-            if (status == null)
+            if (priority == null)
             {
                 return NotFound();
             }
             var tickets = await _context.Ticket.Where(t => t.StatusRefId == id).ToArrayAsync();
-            status.Tickets = tickets.Length;
-            return status;
+            priority.Tickets = tickets.Length;
+            return priority;
         }
 
-        // PUT: api/Status/5
+        // PUT: api/Priorities/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutStatus(int id, Status status)
+        public async Task<IActionResult> PutPriority(int id, Priority priority)
         {
-            if (id != status.Id)
+            if (id != priority.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(status).State = EntityState.Modified;
+            _context.Entry(priority).State = EntityState.Modified;
 
             try
             {
@@ -66,7 +62,7 @@ namespace WorkForceManagementApp.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!StatusExists(id))
+                if (!PriorityExists(id))
                 {
                     return NotFound();
                 }
@@ -79,41 +75,37 @@ namespace WorkForceManagementApp.Controllers
             return NoContent();
         }
 
-        // POST: api/Status
+        // POST: api/Priorities
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<Status>> PostStatus(Status status)
+        public async Task<ActionResult<Priority>> PostPriority(Priority priority)
         {
-            _context.Status.Add(status);
+            _context.Priority.Add(priority);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetStatus", new { id = status.Id }, status);
+            return CreatedAtAction("GetPriority", new { id = priority.Id }, priority);
         }
 
-        // DELETE: api/Status/5
+        // DELETE: api/Priorities/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Status>> DeleteStatus(int id)
+        public async Task<ActionResult<Priority>> DeletePriority(int id)
         {
-            var status = await _context.Status.FindAsync(id);
-            if (status == null)
+            var priority = await _context.Priority.FindAsync(id);
+            if (priority == null)
             {
                 return NotFound();
             }
-            var ticket = await _context.Ticket.Where(t => t.StatusRefId == id).ToListAsync();
-            if (ticket.Count() != 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Cannot delete status, there are tickets with this status." });
-            }
-            _context.Status.Remove(status);
+
+            _context.Priority.Remove(priority);
             await _context.SaveChangesAsync();
 
-            return status;
+            return priority;
         }
 
-        private bool StatusExists(int id)
+        private bool PriorityExists(int id)
         {
-            return _context.Status.Any(e => e.Id == id);
+            return _context.Priority.Any(e => e.Id == id);
         }
     }
 }

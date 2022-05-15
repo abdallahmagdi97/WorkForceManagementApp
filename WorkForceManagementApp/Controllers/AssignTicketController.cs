@@ -55,6 +55,7 @@ namespace WorkForceManagementApp.Controllers
                 return BadRequest();
             }
             assignTicketRequest.UpdatedAt = DateTime.Now;
+
             _context.Entry(assignTicketRequest).State = EntityState.Modified;
             _context.Entry(assignTicketRequest).Property(x => x.CreatedAt).IsModified = false;
             try
@@ -85,7 +86,14 @@ namespace WorkForceManagementApp.Controllers
             assignTicketRequest.CreatedAt = DateTime.Now;
             _context.AssignTicketRequest.Add(assignTicketRequest);
             await _context.SaveChangesAsync();
-
+            var ticket = await _context.Ticket.FindAsync(assignTicketRequest.TicketRefId);
+            ticket.TechRefId = assignTicketRequest.TechRefId;
+            var tech = await _context.Tech.FindAsync(ticket.TechRefId);
+            ticket.TechName = tech.Name;
+            ticket.TechAssignDate = DateTime.Now;
+            _context.Entry(ticket).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            
             return CreatedAtAction("GetAssignTicketRequest", new { id = assignTicketRequest.Id }, assignTicketRequest);
         }
 

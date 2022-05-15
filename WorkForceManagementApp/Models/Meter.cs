@@ -19,6 +19,8 @@ namespace WorkForceManagementApp.Models
         public int CommunicationMethodRefId { get; set; }
         [ForeignKey("Manufacturer")]
         public int ManufacturerRefId { get; set; }
+        [ForeignKey("MeterType")]
+        public int MeterTypeRefId { get; set; }
         public string ManufacturingYear { get; set; }
         public int Connection { get; set; }  // Direct = 1 , Indirect = 2
         public int PhaseAndWire { get; set; }  // SinglePhase = 1 & ThreePhase = 3

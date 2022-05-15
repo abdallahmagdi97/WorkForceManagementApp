@@ -115,8 +115,9 @@ namespace WorkForceManagementApp.Controllers
         {
             return _context.Meter.Any(e => e.Id == id);
         }
-
-        public async void ImportMeters(IFormFile file)
+        [HttpPost]
+        [Route("import")]
+        public async Task<ActionResult<IEnumerable<Meter>>> ImportMeters([FromForm] IFormFile file)
         {
             var meters = new List<Meter>();
             using (var stream = new MemoryStream())
@@ -143,6 +144,7 @@ namespace WorkForceManagementApp.Controllers
                 _context.Meter.Add(meter);
                 await _context.SaveChangesAsync();
             }
+            return meters;
         }
     }
 }

@@ -9,6 +9,11 @@ namespace WorkForceManagementApp.Models
 {
     public class Ticket
     {
+        //public Ticket()
+        //{
+        //    this.StatusRefId = 1;
+        //    this.PriorityRefId = 1;
+        //}
         [Key]
         public int Id { get; set; }
         public DateTime CreationDate { get; set; }
@@ -30,9 +35,13 @@ namespace WorkForceManagementApp.Models
         public int TechRefId { get; set; }
         [ForeignKey("Status")]
         public int StatusRefId { get; set; }
+        [ForeignKey("Priority")]
+        public int PriorityRefId { get; set; }
         public string Description { get; set; }
+        public string Note { get; set; }
         [NotMapped]
         public Customer Customer { get; internal set; }
+        public string TechName { get; set; }
         [NotMapped]
         public Meter Meter { get; internal set; }
         [NotMapped]
@@ -40,5 +49,7 @@ namespace WorkForceManagementApp.Models
         public DateTime LastUpdateDate { get; set; }
         public string RemovedMeterLastReadingValue { get; set; }
         public string NewReadingInstalledMeter { get; set; }
+        public DateTime TechAssignDate { get; set; }
+        public double TechAssignDurationInDays { get; set; }
     }
 }

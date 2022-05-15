@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkForceManagementApp.Data;
 
 namespace WorkForceManagementApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220510133327_Tech Name to ticket")]
+    partial class TechNametoticket
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -521,24 +523,6 @@ namespace WorkForceManagementApp.Migrations
                     b.ToTable("MeterType");
                 });
 
-            modelBuilder.Entity("WorkForceManagementApp.Models.Priority", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("NameAr")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NameEn")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Priority");
-                });
-
             modelBuilder.Entity("WorkForceManagementApp.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -576,10 +560,7 @@ namespace WorkForceManagementApp.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("NameAr")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NameEn")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -684,12 +665,6 @@ namespace WorkForceManagementApp.Migrations
                     b.Property<string>("NewReadingInstalledMeter")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PriorityRefId")
-                        .HasColumnType("int");
-
                     b.Property<string>("RemovedMeterLastReadingValue")
                         .HasColumnType("nvarchar(max)");
 
@@ -698,12 +673,6 @@ namespace WorkForceManagementApp.Migrations
 
                     b.Property<int>("StatusRefId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("TechAssignDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("TechAssignDurationInDays")
-                        .HasColumnType("float");
 
                     b.Property<string>("TechName")
                         .HasColumnType("nvarchar(max)");

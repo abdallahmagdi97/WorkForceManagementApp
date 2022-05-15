@@ -45,7 +45,7 @@ namespace WorkForceManagementApp.Controllers
         public async Task<ActionResult<UserModel>> Get(string id)
         {
             var user = await _context.ApplicationUser.FindAsync(id);
-            return new UserModel() { UserName = user.UserName, Role = user.Role };
+            return new UserModel() { UserName = user.UserName, Role = user.Role , Id = user.Id};
         }
 
         // POST api/<UsersController>
